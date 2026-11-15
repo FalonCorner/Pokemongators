@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pokémon Gen Matchup</title>
+<meta name="description" content="Match up the evolution families of one Pokémon generation against another and export the chart as an image.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <h1>Gen Matchup</h1>
+  <div class="gens">
+    <label>Left <select id="genL"></select></label>
+    <span class="vs">vs</span>
+    <label>Right <select id="genR"></select></label>
+  </div>
+  <div class="actions">
+    <button id="btnAuto" title="Pair up the remaining families by type and size">Auto-match</button>
+    <button id="btnUndo" title="Undo">Undo</button>
+    <button id="btnClear">Clear</button>
+    <button id="btnLink">Copy link</button>
+    <button id="btnPng" class="primary">Save image</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="board-wrap">
+    <input id="title" class="title-input" placeholder="Chart title (optional)" maxlength="80">
+    <div class="board-scroll">
+      <div id="board" class="board"></div>
+    </div>
+    <p class="help">
+      Tap a family in a list to put it in the highlighted row. Tap the pink sign or a green slash to change it.
+      Tap a row to select it, then tap a Pokémon in it to send its family back to the list.
+    </p>
+  </section>
+
+  <aside class="pools">
+    <div class="pool-bar">
+      <span id="target" class="target"></span>
+      <button id="btnNewRow">+ New row</button>
+    </div>
+    <div class="filters">
+      <input id="search" type="search" placeholder="Search…">
+      <select id="typeFilter"><option value="">All types</option></select>
+      <label class="check"><input id="hideLegends" type="checkbox" checked> Hide legendaries</label>
+      <label class="check"><input id="artStyle" type="checkbox"> Official art</label>
+    </div>
+    <div class="pool-cols">
+      <div class="pool"><h2 id="poolTitleL"></h2><div id="poolL" class="pool-list"></div></div>
+      <div class="pool"><h2 id="poolTitleR"></h2><div id="poolR" class="pool-list"></div></div>
+    </div>
+  </aside>
+</main>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="data/pokemon.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
