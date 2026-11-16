@@ -24,7 +24,9 @@
     });
   }
 
-  const spriteUrl = (id, art) => art
+  // window.SPRITES (id -> base64 PNG) is set in the single-file build, which can't load remote images.
+  const EMBED = !!window.SPRITES;
+  const spriteUrl = (id, art) => EMBED ? "data:image/png;base64," + window.SPRITES[id] : art
     ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`
     : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 
@@ -344,7 +346,9 @@
       const blob = await new Promise(res => cv.toBlob(res, "image/png"));
       const name = `${REGIONS[state.gl]}-vs-${REGIONS[state.gr]}.png`.toLowerCase();
       const file = new File([blob], name, { type: "image/png" });
-      if (navigator.canShare && navigator.canShare({ files: [file] }) && /iPhone|iPad|Android/i.test(navigator.userAgent)) {
+      if (EMBED) {
+        showPreview(URL.createObjectURL(blob));
+      } else if (navigator.canShare && navigator.canShare({ files: [file] }) && /iPhone|iPad|Android/i.test(navigator.userAgent)) {
         await navigator.share({ files: [file], title: name }).catch(() => {});
       } else {
         const a = document.createElement("a");
@@ -357,6 +361,12 @@
     } finally {
       btn.disabled = false; btn.textContent = "Save image";
     }
+  }
+
+  function showPreview(src) {
+    const ov = $("preview");
+    ov.querySelector("img").src = src;
+    ov.hidden = false;
   }
 
   // ---------- events ----------
@@ -399,15 +409,24 @@
       commit();
     };
     $("btnClear").onclick = () => {
-      if (!state.rows.length || !confirm("Clear every row?")) return;
+      const btn = $("btnClear");
+      if (!state.rows.length) return;
+      if (!btn.dataset.armed) {
+        btn.dataset.armed = "1"; btn.textContent = "Tap again to clear";
+        setTimeout(() => { delete btn.dataset.armed; btn.textContent = "Clear"; }, 3000);
+        return;
+      }
+      delete btn.dataset.armed; btn.textContent = "Clear";
       snapshot(); state.rows = []; state.title = ""; active = -1; commit();
     };
     $("btnLink").onclick = async () => {
       const url = `${location.origin}${location.pathname}#${encode()}`;
       window.history.replaceState(null, "", url);
       try { await navigator.clipboard.writeText(url); toast("Link copied!"); }
-      catch (e) { prompt("Copy this link:", url); }
+      catch (e) { toast("Couldn't copy. The link is now in the address bar."); }
     };
+    if (EMBED) { $("btnLink").hidden = true; $("artStyle").parentElement.hidden = true; state.art = false; }
+    $("preview").onclick = e => { if (e.target.id === "preview" || e.target.dataset.close) $("preview").hidden = true; };
     $("btnPng").onclick = exportPng;
 
     document.querySelector(".pool-cols").addEventListener("click", e => {
